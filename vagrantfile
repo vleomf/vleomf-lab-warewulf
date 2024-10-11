@@ -1,58 +1,42 @@
 require 'yaml'
 cwd = File.dirname(File.expand_path(__FILE__))
-yml = YAML.load_file("#{cwd}/nodes.yaml")
+yml = YAML.load_file("#{cwd}/boxes.yaml")
 cfg = yml['nodes']
 
 Vagrant.configure("2") do |config|
     cfg.each do | c | 
-        config.vm.define "#{c['name']}" do |x|
-            # x.vm.box = "ubuntu/trusty64"
-            # x.vm.box_version = "20191107.0.0"
-            x.vm.box = "almalinux/9"
-            x.vm.box_version = "9.4.20240805"
-            x.vm.hostname =  "#{c['name']}".gsub(/\_/, '-')
-            x.vm.provision "ansible" do |ansible|
+        config.vm.define "#{c['name']}" do |vmdef|
+            vmdef.vbguest.auto_update = false if Vagrant.has_plugin?('vagrant-vbguest')
+            # vmdef.vm.box = "ubuntu/trusty64"
+            # vmdef.vm.box_version = "20191107.0.0"
+            vmdef.vm.box = "#{c['box']}" #"almalinux/9"
+            vmdef.vm.box_version = "#{c['box_version']}" #"9.4.20240805"
+            vmdef.vm.hostname =  "#{c['name']}".gsub(/\_/, '-')
+            vmdef.vm.provision "ansible" do |ansible|
                 ansible.compatibility_mode = "2.0"
                 ansible.extra_vars = {
                     ansible_user: "vagrant"
                 }
-                ansible.playbook = "src/#{c['name']}/lab.yml"
+                ansible.playbook = "src/#{c['name']}/playbook.yml"
             end
             
-            x.vm.synced_folder ".", '/vagrant', type: "rsync"
-            x.vm.provider "virtualbox" do |vb|
+            # Sadly, WSL2 does not support other path than "."
+            # so we ended rsyncing the whole project
+            vmdef.vm.synced_folder ".", '/vagrant', type: "rsync"
+            vmdef.vm.provider "virtualbox" do |vb|
                 vb.check_guest_additions = false
             end
-
-            # https://bindfs.org/docs/bindfs-help.txt
-            x.bindfs.bind_folder "/vagrant/src/#{c['name']}/rsync", "/home/vagrant/rsync",
+            
+            # Using bindfs pluging, we can bind directories in vm paths.
+            c['bind_folders'].each do |bf|
+                vmdef.bindfs.bind_folder "/vagrant/src/#{c['name']}/#{bf['name']}", "#{bf['path']}",
                 u: "vagrant",
                 g: "vagrant",
                 p: "0774",
                 chown_ignore: true,
                 chgrp_ignore: true,
                 chmod_ignore: true
-            
-            # Problems with almalinux/9 (Don't forget to restart vboxadd-service.service)
-            #   VirtualBox Guest Additions: Starting.
-            #   VirtualBox Guest Additions: Setting up modules
-            #   VirtualBox Guest Additions: Building the VirtualBox Guest Additions kernel 
-            #   modules.  This may take a while.
-            #   VirtualBox Guest Additions: To build modules for other installed kernels, run
-            #   VirtualBox Guest Additions:   /sbin/rcvboxadd quicksetup <version>
-            #   VirtualBox Guest Additions: or
-            #   VirtualBox Guest Additions:   /sbin/rcvboxadd quicksetup all
-            #   VirtualBox Guest Additions: Kernel headers not found for target kernel 
-            #   5.14.0-427.28.1.el9_4.x86_64. Please install them and execute
-            #     /sbin/rcvboxadd setup
+            end
         end
     end
-
-    # config.vm.synced_folder './src/warewulf_lab', '/home/vagrant/', type: "rsync" #disabled: true
-    # config.vm.define "warewulf_lab" do |x|
-    #     x.vm.box = "almalinux/9"
-    #     x.vm.box_version = "9.4.20240805"
-    #     # x.vm.hostname = "warewulf_lab"
-    #     x.vm.provision "shell", inline: "whoami; pwd"
-    # end
 end

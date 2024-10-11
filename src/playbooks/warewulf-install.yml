@@ -1,0 +1,53 @@
+---
+- name: Install Warewulf Provisioner
+  hosts: all
+  become: true
+  gather_facts: true
+  tasks:
+  - name: Populate service facts
+    service_facts:
+  
+  - name: Install Warewulf rpm
+    ansible.builtin.dnf:
+      name:
+        - 'https://github.com/warewulf/warewulf/releases/download/v4.5.7/warewulf-4.5.7-1.el9.x86_64.rpm'
+      state: 'present'
+      disable_gpg_check: true
+
+  - name: Configure warewulf firewall
+    ansible.posix.firewalld:
+      service: warewulf
+      state: enabled
+      permanent: true
+
+  - name: Configure dhcp firewall
+    ansible.posix.firewalld:
+      service: dhcp
+      state: enabled
+      permanent: true
+
+  - name: Configure nfs firewall
+    ansible.posix.firewalld:
+      service: nfs
+      state: enabled
+      permanent: true
+
+  - name: Configure tftp firewall
+    ansible.posix.firewalld:
+      service: tftp
+      state: enabled
+      permanent: true
+
+  # - name: Install linux kernel headers
+  #   ansible.builtin.script: bin/install-linux-kernel-headers.bash
+
+  # - name: Re-run the vbox guest additions setup
+  #   ansible.builtin.shell: /sbin/rcvboxadd setup
+  #   when: ansible_facts.services['vboxadd-service.service'].state != 'running'
+
+  # - name: Enable service
+  #   ansible.builtin.service:
+  #     name: vboxadd-service.service
+  #     state: restarted
+
+      

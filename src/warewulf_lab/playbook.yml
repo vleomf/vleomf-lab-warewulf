@@ -1,0 +1,8 @@
+---
+- name: Include Almalinux 9 vbhosts fix
+  ansible.builtin.import_playbook: ../playbooks/alma9-fix.yml
+
+- name: Install Warewulf
+  ansible.builtin.import_playbook: ../playbooks/warewulf-install.yml
+
+    

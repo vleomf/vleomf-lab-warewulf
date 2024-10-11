@@ -36,3 +36,31 @@ source  env/bin/activate
 pip install ansible
 
 ```
+
+More commands
+```bash
+# Start project
+vagrant up
+
+# Status project
+vagrant status
+
+# SSH access to VM
+vagrant ssh
+
+# Watch for changes
+vagrant rsync-auto
+
+# Provision ansible playbook
+vagrant provision
+
+# Reload without provisioning (ansible)
+# This will apply changes in vagrantfile
+vagrant reload
+
+# Restart and reprovision
+vagrant reload --provision
+
+# Destroy environment
+vagrant destroy -f
+```

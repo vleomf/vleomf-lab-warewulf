@@ -1,5 +1,5 @@
 ---
-- name: Provision Warewulf's required configurations
+- name: Fix for Almalinux 9 base image
   hosts: all
   become: true
   gather_facts: true

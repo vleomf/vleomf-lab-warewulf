@@ -1,0 +1,8 @@
+---
+nodes:
+  - name: warewulf_lab
+    box: "almalinux/9"
+    box_version: "9.4.20240805"
+    bind_folders:
+      - name: test
+        path: /home/vagrant/magic
