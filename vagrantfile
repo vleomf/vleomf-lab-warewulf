@@ -12,6 +12,8 @@ Vagrant.configure("2") do |config|
             vmdef.vm.box = "#{c['box']}" #"almalinux/9"
             vmdef.vm.box_version = "#{c['box_version']}" #"9.4.20240805"
             vmdef.vm.hostname =  "#{c['name']}".gsub(/\_/, '-')
+            vmdef.vm.network "private_network", ip: "#{c['ip']}", name: "#{c['host_only_adapter']}", adapter: 2
+
             vmdef.vm.provision "ansible" do |ansible|
                 ansible.compatibility_mode = "2.0"
                 ansible.extra_vars = {
