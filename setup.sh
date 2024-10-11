@@ -33,8 +33,9 @@ fi
 #
 # Install required plugins
 #
-# vagrant plugin install vagrant-vbguest
-# vagrant plugin install virtualbox_WSL2
-# vagrant plugin install vagrant-bindfs
+# vagrant plugin install vagrant-reload
+
 vagrant plugin install vagrant-vbguest
-vagrant plugin install vagrant-reload
+vagrant plugin install vagrant-bindfs
+vagrant plugin install virtualbox_WSL2
+vagrant plugin install vagrant-vbguest

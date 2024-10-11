@@ -6,8 +6,10 @@ cfg = yml['nodes']
 Vagrant.configure("2") do |config|
     cfg.each do | c | 
         config.vm.define "#{c['name']}" do |x|
-            x.vm.box = "ubuntu/trusty64"
-            x.vm.box_version = "20191107.0.0"
+            # x.vm.box = "ubuntu/trusty64"
+            # x.vm.box_version = "20191107.0.0"
+            x.vm.box = "almalinux/9"
+            x.vm.box_version = "9.4.20240805"
             x.vm.hostname =  "#{c['name']}".gsub(/\_/, '-')
             x.vm.provision "ansible" do |ansible|
                 ansible.extra_vars = {
@@ -15,22 +17,33 @@ Vagrant.configure("2") do |config|
                 }
                 ansible.playbook = "src/#{c['name']}/playbook.yml"
             end
-            # x.vm.synced_folder "src/#{c['name']}", '/vagrant'
-            # x.vm.provider "virtualbox" do |vb|
-            #     vb.check_guest_additions = false
-            # end
+            
+            x.vm.synced_folder ".", '/vagrant', type: "rsync"
+            x.vm.provider "virtualbox" do |vb|
+                vb.check_guest_additions = false
+            end
 
             # https://bindfs.org/docs/bindfs-help.txt
-            # x.bindfs.bind_folder "/vagrant", "/home/vagrant",
-            #     u: "vagrant",
-            #     g: "vagrant",
-            #     p: "0774",
-            #     chown_ignore: true,
-            #     chgrp_ignore: true,
-            #     chmod_ignore: true 
-            # vboxadd-service.service
-            # 5.14.0-427.28.1.el9_4.x86_64. Please install them and execute
-            # /sbin/rcvboxadd setup
+            x.bindfs.bind_folder "/vagrant/src/#{c['name']}/rsync", "/home/vagrant/lab",
+                u: "vagrant",
+                g: "vagrant",
+                p: "0774",
+                chown_ignore: true,
+                chgrp_ignore: true,
+                chmod_ignore: true
+            
+            # Problems with almalinux/9 (Don't forget to restart vboxadd-service.service)
+            #   VirtualBox Guest Additions: Starting.
+            #   VirtualBox Guest Additions: Setting up modules
+            #   VirtualBox Guest Additions: Building the VirtualBox Guest Additions kernel 
+            #   modules.  This may take a while.
+            #   VirtualBox Guest Additions: To build modules for other installed kernels, run
+            #   VirtualBox Guest Additions:   /sbin/rcvboxadd quicksetup <version>
+            #   VirtualBox Guest Additions: or
+            #   VirtualBox Guest Additions:   /sbin/rcvboxadd quicksetup all
+            #   VirtualBox Guest Additions: Kernel headers not found for target kernel 
+            #   5.14.0-427.28.1.el9_4.x86_64. Please install them and execute
+            #     /sbin/rcvboxadd setup
         end
     end
 
