@@ -1,0 +1,22 @@
+---
+- name: Provision Warewulf's required configurations
+  hosts: all
+  become: true
+  gather_facts: true
+  tasks:
+  - name: Populate service facts
+    service_facts:
+
+  - name: Install linux kernel headers
+    ansible.builtin.script: bin/install-linux-kernel-headers.bash
+
+  - name: Re-run the vbox guest additions setup
+    ansible.builtin.shell: /sbin/rcvboxadd setup
+    when: ansible_facts.services['vboxadd-service.service'].state != 'running'
+
+  - name: Enable service
+    ansible.builtin.service:
+      name: vboxadd-service.service
+      state: restarted
+
+      
