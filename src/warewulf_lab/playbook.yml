@@ -1,0 +1,9 @@
+---
+- name: Provision Warewulf's required configurations
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+  - name: Debug test
+    debug:
+      msg: Debugging !!

@@ -1,0 +1,44 @@
+require 'yaml'
+cwd = File.dirname(File.expand_path(__FILE__))
+yml = YAML.load_file("#{cwd}/nodes.yaml")
+cfg = yml['nodes']
+
+Vagrant.configure("2") do |config|
+    cfg.each do | c | 
+        config.vm.define "#{c['name']}" do |x|
+            x.vm.box = "ubuntu/trusty64"
+            x.vm.box_version = "20191107.0.0"
+            x.vm.hostname =  "#{c['name']}".gsub(/\_/, '-')
+            x.vm.provision "ansible" do |ansible|
+                ansible.extra_vars = {
+                    ansible_user: "vagrant"
+                }
+                ansible.playbook = "src/#{c['name']}/playbook.yml"
+            end
+            # x.vm.synced_folder "src/#{c['name']}", '/vagrant'
+            # x.vm.provider "virtualbox" do |vb|
+            #     vb.check_guest_additions = false
+            # end
+
+            # https://bindfs.org/docs/bindfs-help.txt
+            # x.bindfs.bind_folder "/vagrant", "/home/vagrant",
+            #     u: "vagrant",
+            #     g: "vagrant",
+            #     p: "0774",
+            #     chown_ignore: true,
+            #     chgrp_ignore: true,
+            #     chmod_ignore: true 
+            # vboxadd-service.service
+            # 5.14.0-427.28.1.el9_4.x86_64. Please install them and execute
+            # /sbin/rcvboxadd setup
+        end
+    end
+
+    # config.vm.synced_folder './src/warewulf_lab', '/home/vagrant/', type: "rsync" #disabled: true
+    # config.vm.define "warewulf_lab" do |x|
+    #     x.vm.box = "almalinux/9"
+    #     x.vm.box_version = "9.4.20240805"
+    #     # x.vm.hostname = "warewulf_lab"
+    #     x.vm.provision "shell", inline: "whoami; pwd"
+    # end
+end
